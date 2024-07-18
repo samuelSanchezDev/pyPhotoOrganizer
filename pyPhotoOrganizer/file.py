@@ -4,6 +4,7 @@ Módulo con la funcionalidad de manipular los archivos.
 
 import datetime
 import logging
+import pathlib
 import re
 from typing import List, Set, Tuple, Union
 import os
@@ -16,6 +17,23 @@ class PyFiles:
     """
     Clase encargada de gestionar los archivos.
     """
+
+    PICTURES: List[str] = [  # Extensiones de imagen
+        '.bmp',  # BMP
+        '.gif',  # GIF
+        '.jpg', '.jpeg',  # JPEG
+        '.png',  # PNG
+        '.webp',  # WebP
+        '.heic', '.heif'  # HEIF
+        '.avif',  # AVIF
+    ]
+
+    VIDEOS: List[str] = [  # Extensiones de vídeo
+        '.3gp',  # 3GPP
+        '.mp4',  # MPEG-4
+        '.mkv',  # Matroska
+        '.webm',  # WebM
+    ]
 
     @staticmethod
     def unique_digest(files: List[str]) -> List[str]:
@@ -92,3 +110,34 @@ class PyFiles:
                           day)
             logging.debug('Excepción: %s', e)
             return None
+
+    @staticmethod
+    def filter_pictures(files: List[str]) -> List[str]:
+        """
+        Método para filtrar los archivos correspondientes a fotos (y vídeos).
+        Para ello se usan las extensiones consideradas en PyFiles.PICTURES y
+        PyFiles.VIDEOS.
+
+        :param files: Lista con los archivos que filtrar.
+        :return: Lista con los archivos filtrados.
+        """
+
+        logging.debug('Filtrando archivos por extensión.')
+
+        # Función para comprobar si un archivo es una foto.
+        def check_extension(file: str) -> bool:
+
+            # Se extrae la extensión.
+            extension = pathlib.Path(file).suffix.lower()
+
+            # Se comprueba si la extensión esta en PyFiles.PICTURES o
+            # PyFiles.VIDEOS
+            is_valid = (extension in PyFiles.PICTURES) or \
+                (extension in PyFiles.VIDEOS)
+
+            logging.debug('Verificando si es una foto o vídeo "%s"... %s',
+                          file, is_valid)
+            return is_valid
+
+        # Se filtran todos los archivos
+        return list(filter(check_extension, files))
