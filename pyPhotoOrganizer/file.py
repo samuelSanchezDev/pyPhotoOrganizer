@@ -2,9 +2,13 @@
 Módulo con la funcionalidad de manipular los archivos.
 """
 
-from typing import List, Set
+import datetime
+import re
+from typing import List, Set, Tuple
 import os
 import hashlib
+
+DATE_FORMAT = r'(\d{4})(\d{2})(\d{2})'  # Mach para fechas en formato YYYYMMDD
 
 
 class PyFiles:
@@ -39,3 +43,37 @@ class PyFiles:
                 unique_files.append(file)
 
         return unique_files
+
+    @staticmethod
+    def date_from_name(file: str) -> Tuple[int, int, int]:
+        """
+        Método para obtener la fecha del archivo del nombre (tiene que estar
+        con la forma YYYYMMDD). La función no comprueba que el archivo exista.
+
+        :param file: path del archivo.
+        :return: una tupla con el año, mes y día del archivo.
+        """
+
+        # Se obtiene el nombre del archivo.
+        file_name = os.path.basename(file)
+
+        # Se filtran los que no tienen en el nombre el patrón YYYYMMDD.
+        result = re.search(DATE_FORMAT, file_name)
+        if not result:
+            return None
+
+        # Se obtienen el año, mes y día.
+        year, month, day = result.group(1), result.group(2), result.group(3)
+
+        # Se verifica que son int.
+        try:
+            year, month, day = int(year), int(month), int(day)
+        except TypeError:  # Solo salta si la fecha no se puede convertir.
+            return None
+
+        # Se verifica que la fecha sea real
+        try:
+            datetime.date(year, month, day)
+            return year, month, day
+        except ValueError:  # Solo salta si la fecha no válida
+            return None
